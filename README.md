@@ -102,3 +102,16 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python src/main.py
+
+## Optional Streamlit Demo
+
+A lightweight Streamlit app is included to visually inspect the pipeline outputs:
+
+- Normalized OMOP-style drug exposure records
+- Pairwise deduplication match results
+- Final deduplicated drug exposure table
+
+To run the app:
+
+```bash
+streamlit run app.py
