@@ -1,0 +1,4 @@
+keyword,drug_concept_id,standard_drug_name,ingredient_concept_id,ingredient_name,formulation,is_combo_drug
+metformin er,19019073,Metformin Extended Release,1503297,Metformin,ER,false
+metformin/sitagliptin,40241331,Metformin / Sitagliptin,1503297|1583722,Metformin|Sitagliptin,IR,true
+metformin,1503297,Metformin,1503297,Metformin,IR,false

@@ -1,0 +1,9 @@
+source_record_id,person_id,start_date,medication_description,route,source_system
+B1,101,2024-01-10,metformin 500mg twice daily,PO,Pharmacy
+B2,102,2024-01-12,metformin 500 mg twice daily,PO,Pharmacy
+B3,103,2024-01-15,metformin 500 mg daily,PO,Pharmacy
+B4,104,2024-01-18,metformin 1000 mg daily,PO,Pharmacy
+B5,105,2024-01-20,metformin 500 mg daily,PO,Pharmacy
+B6,106,2024-01-22,metformin 500 mg BID,PO,Pharmacy
+B7,107,2024-01-25,metformin 500 mg twice daily,PO,Pharmacy
+B8,108,2024-03-28,metformin 1000 mg daily,PO,Pharmacy

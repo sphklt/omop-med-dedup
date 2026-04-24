@@ -1,0 +1,17 @@
+drug_exposure_id,source_record_id,person_id,drug_exposure_start_date,drug_source_value,route_source_value,source_system,drug_concept_id,standard_drug_name,ingredient_concept_id,ingredient_name,formulation,is_combo_drug,route_concept_id,strength_mg,frequency_per_day,tablet_multiplier,total_daily_dose_mg,drug_type_concept_id,sig
+1,A1,101,2024-01-10,Metformin 500 mg BID,oral,EHR,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,2.0,1,1000.0,32838,Metformin 500 mg BID
+2,A2,102,2024-01-12,Metformin 850 mg twice daily,oral,EHR,1503297,Metformin,1503297,Metformin,IR,False,4132161,850.0,2.0,1,1700.0,32838,Metformin 850 mg twice daily
+3,A3,103,2024-01-15,Metformin ER 500 mg once daily,oral,EHR,19019073,Metformin Extended Release,1503297,Metformin,ER,False,4132161,500.0,1.0,1,500.0,32838,Metformin ER 500 mg once daily
+4,A4,104,2024-01-18,Metformin 500 mg tablet take 2 tablets daily,oral,EHR,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,1.0,2,1000.0,32838,Metformin 500 mg tablet take 2 tablets daily
+5,A5,105,2024-01-20,Metformin 500 mg,oral,EHR,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,,1,,32838,Metformin 500 mg
+6,A6,106,2024-01-22,Metformin/Sitagliptin 500/50 mg BID,oral,EHR,40241331,Metformin / Sitagliptin,1503297|1583722,Metformin|Sitagliptin,IR,True,4132161,50.0,2.0,1,100.0,32838,Metformin/Sitagliptin 500/50 mg BID
+7,A7,107,2024-01-25,Metformin 0.5 g BID,oral,EHR,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,2.0,1,1000.0,32838,Metformin 0.5 g BID
+8,A8,108,2024-01-28,Metformin 1000 mg daily,oral,EHR,1503297,Metformin,1503297,Metformin,IR,False,4132161,1000.0,1.0,1,1000.0,32838,Metformin 1000 mg daily
+9,B1,101,2024-01-10,metformin 500mg twice daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,2.0,1,1000.0,32869,metformin 500mg twice daily
+10,B2,102,2024-01-12,metformin 500 mg twice daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,2.0,1,1000.0,32869,metformin 500 mg twice daily
+11,B3,103,2024-01-15,metformin 500 mg daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,1.0,1,500.0,32869,metformin 500 mg daily
+12,B4,104,2024-01-18,metformin 1000 mg daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,1000.0,1.0,1,1000.0,32869,metformin 1000 mg daily
+13,B5,105,2024-01-20,metformin 500 mg daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,1.0,1,500.0,32869,metformin 500 mg daily
+14,B6,106,2024-01-22,metformin 500 mg BID,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,2.0,1,1000.0,32869,metformin 500 mg BID
+15,B7,107,2024-01-25,metformin 500 mg twice daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,500.0,2.0,1,1000.0,32869,metformin 500 mg twice daily
+16,B8,108,2024-03-28,metformin 1000 mg daily,PO,Pharmacy,1503297,Metformin,1503297,Metformin,IR,False,4132161,1000.0,1.0,1,1000.0,32869,metformin 1000 mg daily

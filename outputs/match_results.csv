@@ -1,0 +1,9 @@
+record_a,record_b,person_id,match_status,confidence,reason,a_drug_source_value,b_drug_source_value,a_daily_dose_mg,b_daily_dose_mg
+A1,B1,101,duplicate,1.0,"Same ingredient, formulation, route, strength, frequency, daily dose, and date window",Metformin 500 mg BID,metformin 500mg twice daily,1000.0,1000.0
+A2,B2,102,not_duplicate,0.0,Dose or frequency differs,Metformin 850 mg twice daily,metformin 500 mg twice daily,1700.0,1000.0
+A3,B3,103,possible_duplicate,0.65,Same drug/date but formulation differs,Metformin ER 500 mg once daily,metformin 500 mg daily,500.0,500.0
+A4,B4,104,possible_duplicate,0.75,"Same total daily dose, but strength or frequency differs",Metformin 500 mg tablet take 2 tablets daily,metformin 1000 mg daily,1000.0,1000.0
+A5,B5,105,possible_duplicate,0.6,Frequency missing in one record,Metformin 500 mg,metformin 500 mg daily,,500.0
+A6,B6,106,not_duplicate,0.0,Different ingredient concept,Metformin/Sitagliptin 500/50 mg BID,metformin 500 mg BID,100.0,1000.0
+A7,B7,107,duplicate,1.0,"Same ingredient, formulation, route, strength, frequency, daily dose, and date window",Metformin 0.5 g BID,metformin 500 mg twice daily,1000.0,1000.0
+A8,B8,108,not_duplicate,0.0,Start dates are outside allowed window,Metformin 1000 mg daily,metformin 1000 mg daily,1000.0,1000.0

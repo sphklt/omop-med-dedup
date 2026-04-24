@@ -1,0 +1,9 @@
+source_record_id,person_id,med_start_date,med_text,route,source_system
+A1,101,2024-01-10,Metformin 500 mg BID,oral,EHR
+A2,102,2024-01-12,Metformin 850 mg twice daily,oral,EHR
+A3,103,2024-01-15,Metformin ER 500 mg once daily,oral,EHR
+A4,104,2024-01-18,Metformin 500 mg tablet take 2 tablets daily,oral,EHR
+A5,105,2024-01-20,Metformin 500 mg,oral,EHR
+A6,106,2024-01-22,Metformin/Sitagliptin 500/50 mg BID,oral,EHR
+A7,107,2024-01-25,Metformin 0.5 g BID,oral,EHR
+A8,108,2024-01-28,Metformin 1000 mg daily,oral,EHR
