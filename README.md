@@ -95,23 +95,79 @@ Generated files:
 - `outputs/match_results.csv`
 - `outputs/deduped_drug_exposure.csv`
 
-## How to Run
+## How to Run the Pipeline
+
+Create and activate a virtual environment:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
+
+Run the deduplication pipeline:
+
+```bash
 python src/main.py
+```
 
-## Optional Streamlit Demo
+## Optional Streamlit App
 
-A lightweight Streamlit app is included to visually inspect the pipeline outputs:
+This project also includes a lightweight Streamlit app for visually inspecting the pipeline outputs.
+
+The app helps review:
 
 - Normalized OMOP-style drug exposure records
 - Pairwise deduplication match results
 - Final deduplicated drug exposure table
 
-To run the app:
+This is useful for quickly validating how the raw medication records were standardized, matched, and deduplicated.
+
+### Run the Streamlit App
+
+After installing the dependencies, start the app with:
 
 ```bash
 streamlit run app.py
+```
+
+Then open the local URL shown in the terminal, usually:
+
+```text
+http://localhost:8501
+```
+
+## Project Structure
+
+A typical project structure may look like this:
+
+```text
+omop-medication-deduplication/
+├── app.py
+├── requirements.txt
+├── README.md
+├── data/
+│   ├── source_a_medications.csv
+│   ├── source_b_medications.csv
+│   └── mock_concept_mapping.csv
+├── outputs/
+│   ├── normalized_drug_exposure.csv
+│   ├── match_results.csv
+│   └── deduped_drug_exposure.csv
+└── src/
+    ├── main.py
+    ├── normalize.py
+    ├── matcher.py
+    └── deduplicate.py
+```
+
+## Notes
+
+This is a simplified demo inspired by OMOP-style medication normalization and deduplication. It is not a full OMOP CDM implementation and does not use official OMOP Athena vocabularies.
+
+The goal is to demonstrate how medication text from multiple sources can be standardized into common fields before applying rule-based deduplication logic.
