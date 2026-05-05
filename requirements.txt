@@ -2,3 +2,5 @@ pandas
 python-dateutil
 jupyter
 streamlit
+pytest
+rapidfuzz

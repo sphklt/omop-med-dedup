@@ -1,6 +1,20 @@
-venv/
+# Python
 __pycache__/
-*.pyc
-.DS_Store
-.ipynb_checkpoints/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environment
+venv/
 .env
+
+# Athena vocabulary files — too large for GitHub (see vocab/README.md for download instructions)
+vocab/*.csv
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
