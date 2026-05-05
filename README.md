@@ -18,7 +18,7 @@ Build a small OMOP-style pipeline that:
 
 1. Loads two raw medication datasets.
 2. Standardizes both into a simplified `drug_exposure` structure.
-3. Maps drug text to mock standard drug concepts.
+3. Maps drug text to real RxNorm concept IDs via the Athena vocabulary (falls back to a mock mapping when vocab files are absent).
 4. Normalizes dose, unit, frequency, route, and formulation.
 5. Classifies pairs as:
    - duplicate
@@ -52,7 +52,7 @@ Additional derived fields are used for medication deduplication:
 
 - `person_id` is already harmonized across both sources.
 - This demo focuses on metformin examples.
-- A mock concept mapping file is used instead of real OMOP Athena vocabulary.
+- Real RxNorm concept IDs are used when `vocab/CONCEPT.csv` is present (downloaded from Athena). A mock keyword mapping is used as a fallback.
 - Possible duplicates are not automatically merged.
 - Combination drugs are not merged with single-ingredient drugs.
 
@@ -332,7 +332,7 @@ The goal is to demonstrate how medication text from multiple sources can be stan
 
 Notable scope limitations that remain out of range for this demo:
 
-- **Real OMOP vocabulary** — concept IDs are mocked; a production system would query the Athena vocabulary database.
 - **Patient identity resolution** — `person_id` is assumed pre-harmonized across sources; cross-system patient matching is a separate problem.
-- **Scalability** — matching uses pairwise iteration; large datasets would require blocking strategies or a dedicated record linkage library.
 - **Possible duplicate resolution** — flagged records are held for human review; no automated merge or feedback loop is included.
+- **Database backend** — the pipeline reads and writes CSV files; a production system would operate against a PostgreSQL or Snowflake OMOP CDM schema.
+- **Date-bucket blocking** — comparisons are blocked on `(person_id, ingredient_concept_id)`; adding a date bucket to the key would further reduce the inner loop for patients with many records of the same drug.
