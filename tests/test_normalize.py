@@ -5,6 +5,7 @@ import pandas as pd
 from normalize import (
     extract_strength_info,
     extract_frequency,
+    extract_prn,
     normalize_route,
     extract_tablet_multiplier,
     extract_combo_strengths,
@@ -68,6 +69,46 @@ class TestExtractStrengthInfo:
 # ---------------------------------------------------------------------------
 # extract_frequency
 # ---------------------------------------------------------------------------
+
+class TestExtractPrn:
+    @pytest.mark.parametrize("text,expected", [
+        ("metformin 500 mg prn",          True),
+        ("metformin 500 mg as needed",     True),
+        ("metformin 500 mg when needed",   True),
+        ("metformin 500 mg if needed",     True),
+        ("metformin 500 mg p.r.n.",        True),
+        ("metformin 500 mg as required",   True),
+        ("metformin 500 mg BID",           False),
+        ("metformin 500 mg once daily",    False),
+        ("metformin 500 mg",               False),
+    ])
+    def test_prn(self, text, expected):
+        assert extract_prn(text) is expected
+
+    def test_prn_field_in_normalized_row(self, mapping_df):
+        row = pd.Series({
+            "source_record_id": "X1",
+            "person_id": 101,
+            "drug_source_value": "metformin 500 mg prn",
+            "route_source_value": "oral",
+            "drug_exposure_start_date": "2024-01-10",
+            "source_system": "EHR",
+        })
+        result = normalize_medication_row(row, mapping_df)
+        assert result["prn"] is True
+
+    def test_scheduled_row_prn_false(self, mapping_df):
+        row = pd.Series({
+            "source_record_id": "X2",
+            "person_id": 101,
+            "drug_source_value": "metformin 500 mg BID",
+            "route_source_value": "oral",
+            "drug_exposure_start_date": "2024-01-10",
+            "source_system": "EHR",
+        })
+        result = normalize_medication_row(row, mapping_df)
+        assert result["prn"] is False
+
 
 class TestExtractFrequency:
     @pytest.mark.parametrize("text,expected", [

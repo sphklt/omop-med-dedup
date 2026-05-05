@@ -65,6 +65,12 @@ def classify_pair(a, b, date_window_days: int = 7, dose_tolerance: float = 0.01)
     if bool(a["is_combo_drug"]) != bool(b["is_combo_drug"]):
         return "not_duplicate", 0.0, "Combination drug vs single-ingredient drug"
 
+    # PRN (as-needed) vs scheduled are fundamentally different regimens
+    a_prn = bool(a.get("prn", False))
+    b_prn = bool(b.get("prn", False))
+    if a_prn != b_prn:
+        return "not_duplicate", 0.0, "Scheduled vs PRN regimen"
+
     if a["route_concept_id"] != b["route_concept_id"]:
         return "possible_duplicate", 0.5, "Same drug but route differs or is missing"
 
@@ -114,54 +120,68 @@ def classify_pair(a, b, date_window_days: int = 7, dose_tolerance: float = 0.01)
     return "not_duplicate", 0.0, "Dose or frequency differs"
 
 
+def _build_blocks(records: pd.DataFrame) -> dict:
+    """Group records by (person_id, ingredient_concept_id) for blocking."""
+    return {
+        key: grp
+        for key, grp in records.groupby(["person_id", "ingredient_concept_id"])
+    }
+
+
 def generate_match_results(
     normalized_df: pd.DataFrame,
     date_window_days: int = 7,
     dose_tolerance: float = 0.01,
 ) -> pd.DataFrame:
     """
-    Compare records across all source systems for the same person.
-    Supports any number of source systems — every unique ordered pair is compared.
+    Compare medication records for the same person and ingredient.
+
+    Covers two comparison types:
+      - Cross-source: every unique unordered pair of source systems.
+      - Within-source: records within the same source system, to catch
+        data-entry duplicates (same drug entered twice in the EHR on the
+        same day, for example).
 
     Blocking strategy
     -----------------
     Records are grouped by (person_id, ingredient_concept_id) before comparison.
-    This means only records for the same patient AND same drug ingredient are ever
-    paired — reducing comparisons from O(n²/p) to O(n²/(p·d)) where d is the mean
+    Only records for the same patient AND same drug ingredient are ever paired,
+    reducing comparisons from O(n²/p) to O(n²/(p·d)) where d is the mean
     number of distinct ingredients per patient.  Records with no mapped ingredient
-    (ingredient_concept_id is null) are excluded from blocking and skipped, since
-    there is no basis for determining whether they are duplicates.
+    (ingredient_concept_id is null) are excluded from blocking and skipped.
     """
     systems = normalized_df["source_system"].unique().tolist()
 
-    # All unique unordered pairs of source systems
-    system_pairs = [
-        (systems[i], systems[j])
+    # Cross-source: every unique unordered pair of distinct systems
+    # Within-source: each system paired with itself
+    # (i, j, within_source)
+    comparisons = [
+        (systems[i], systems[j], i == j)
         for i in range(len(systems))
-        for j in range(i + 1, len(systems))
+        for j in range(i, len(systems))
     ]
 
     results = []
 
-    for sys_a, sys_b in system_pairs:
+    for sys_a, sys_b, within_source in comparisons:
         records_a = normalized_df[normalized_df["source_system"] == sys_a]
-        records_b = normalized_df[normalized_df["source_system"] == sys_b]
+        a_by_block = _build_blocks(records_a)
 
-        # Block on (person_id, ingredient_concept_id).
-        # dropna=True (default) skips records with null ingredient_concept_id —
-        # unmapped drugs cannot be reliably identified as duplicates.
-        a_by_block = {
-            key: grp
-            for key, grp in records_a.groupby(["person_id", "ingredient_concept_id"])
-        }
-        b_by_block = {
-            key: grp
-            for key, grp in records_b.groupby(["person_id", "ingredient_concept_id"])
-        }
+        if within_source:
+            b_by_block = a_by_block  # same object — avoids rebuilding
+        else:
+            records_b = normalized_df[normalized_df["source_system"] == sys_b]
+            b_by_block = _build_blocks(records_b)
 
         for block_key in set(a_by_block) & set(b_by_block):
-            for _, a in a_by_block[block_key].iterrows():
-                for _, b in b_by_block[block_key].iterrows():
+            rows_a = list(a_by_block[block_key].iterrows())
+            rows_b = list(b_by_block[block_key].iterrows())
+
+            for i, (_, a) in enumerate(rows_a):
+                # For within-source, only compare j > i to avoid self-comparison
+                # and producing both (A1,A2) and (A2,A1)
+                start_j = i + 1 if within_source else 0
+                for _, b in rows_b[start_j:]:
                     status, confidence, reason = classify_pair(
                         a, b, date_window_days, dose_tolerance
                     )

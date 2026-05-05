@@ -92,12 +92,17 @@ Extracts per-dose count from phrases like:
 
 ## Matching Rules
 
+Comparisons are run in two passes:
+- **Cross-source** — every unique unordered pair of source systems (EHR vs Pharmacy, EHR vs Claims, etc.)
+- **Within-source** — records within the same source system, to catch data-entry duplicates (same drug entered twice in the EHR on the same day)
+
 ### Duplicate
 
 All of the following must match (within tolerance):
 
 - person_id
 - ingredient concept
+- PRN status (both scheduled, or both PRN)
 - formulation
 - route
 - start date within the allowed window (default: 7 days)
@@ -125,6 +130,7 @@ Any of the following:
 - different patient
 - different ingredient concept
 - combination drug vs single-ingredient drug
+- scheduled vs PRN regimen
 - different combo drug strength profile
 - start date outside the allowed window
 - different dose or frequency (after tolerance check)
@@ -263,7 +269,7 @@ The pipeline logs progress at each stage:
 pytest tests/ -v
 ```
 
-130 tests cover:
+146 tests cover:
 
 - Unit tests for all parsing functions (strength, frequency, route, tablet multiplier, combo strengths, concept mapping)
 - Unit tests for deduplication logic (dose tolerance, all match classifications, N-source matching, canonical preference)
@@ -336,3 +342,5 @@ Notable scope limitations that remain out of range for this demo:
 - **Possible duplicate resolution** — flagged records are held for human review; no automated merge or feedback loop is included.
 - **Database backend** — the pipeline reads and writes CSV files; a production system would operate against a PostgreSQL or Snowflake OMOP CDM schema.
 - **Date-bucket blocking** — comparisons are blocked on `(person_id, ingredient_concept_id)`; adding a date bucket to the key would further reduce the inner loop for patients with many records of the same drug.
+- **Days supply / quantity** — two dispensings of the same drug at different quantities (30-day vs 90-day fill) may be refills rather than duplicates; the pipeline does not yet distinguish between them.
+- **Dose form** — tablet vs capsule vs oral solution is not currently captured; only ER vs IR formulation is compared.

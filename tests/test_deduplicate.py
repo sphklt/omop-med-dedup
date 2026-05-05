@@ -60,6 +60,7 @@ class TestClassifyPair:
             "combo_strengths": None,
             "frequency_per_day": 2.0,
             "total_daily_dose_mg": 1000.0,
+            "prn": False,
         }
         defaults.update(kwargs)
         return pd.Series(defaults)
@@ -115,6 +116,24 @@ class TestClassifyPair:
         )
         assert status == "possible_duplicate"
         assert conf == 0.65
+
+    def test_prn_vs_scheduled_not_duplicate(self):
+        # One record is PRN, the other is scheduled — fundamentally different regimens
+        status, conf, reason = classify_pair(
+            self._rec(prn=True),
+            self._rec(prn=False),
+        )
+        assert status == "not_duplicate"
+        assert conf == 0.0
+        assert "PRN" in reason
+
+    def test_both_prn_same_dose_duplicate(self):
+        # Both PRN, identical dose — still a duplicate
+        status, conf, _ = classify_pair(
+            self._rec(prn=True),
+            self._rec(prn=True),
+        )
+        assert status == "duplicate"
 
     def test_strength_unit_mismatch_incompatible(self):
         # mg vs units — fundamentally incompatible, cannot compare numerically
@@ -233,6 +252,35 @@ class TestGenerateMatchResults:
         df = pd.DataFrame([rec_a, rec_b])
         results = generate_match_results(df)
         assert len(results) == 0  # blocking prevents cross-ingredient comparison
+
+    def test_within_source_duplicate_detected(self):
+        # Same drug entered twice in the same system for the same patient on the same day
+        rec = self._base_record
+        df = pd.DataFrame([
+            rec("A1", "EHR"),
+            rec("A2", "EHR"),  # same system, same patient, same drug
+        ])
+        results = generate_match_results(df)
+        assert len(results) == 1
+        assert results.iloc[0]["match_status"] == "duplicate"
+        assert set([results.iloc[0]["record_a"], results.iloc[0]["record_b"]]) == {"A1", "A2"}
+
+    def test_within_source_no_self_comparison(self):
+        # A single record should never be compared with itself
+        df = pd.DataFrame([self._base_record("A1", "EHR")])
+        results = generate_match_results(df)
+        assert len(results) == 0
+
+    def test_within_and_cross_source_combined(self):
+        # 2 EHR records + 1 Pharmacy record → 1 within-EHR pair + 2 cross-source pairs
+        rec = self._base_record
+        df = pd.DataFrame([
+            rec("A1", "EHR"),
+            rec("A2", "EHR"),
+            rec("B1", "Pharmacy"),
+        ])
+        results = generate_match_results(df)
+        assert len(results) == 3  # A1-A2 (within), A1-B1 (cross), A2-B1 (cross)
 
     def test_unmapped_records_excluded_from_blocking(self):
         # Records with None ingredient_concept_id (unmapped) should not be compared

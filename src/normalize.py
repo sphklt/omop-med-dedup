@@ -100,6 +100,17 @@ def extract_frequency(text: str):
     return None
 
 
+_PRN_RE = re.compile(
+    r"\b(?:prn|p\.r\.n\.?|as\s+needed|when\s+needed|if\s+needed|as\s+required)\b",
+    re.IGNORECASE,
+)
+
+
+def extract_prn(text: str) -> bool:
+    """Return True if the sig explicitly indicates an as-needed (PRN) regimen."""
+    return bool(_PRN_RE.search(normalize_text(text)))
+
+
 def extract_strength_info(text: str) -> dict:
     """
     Extract medication strength and normalize to mg where possible.
@@ -264,6 +275,7 @@ def normalize_medication_row(row, concept_mapper) -> dict:
         combo_strengths = extract_combo_strengths(drug_text, is_combo)
         frequency_per_day = extract_frequency(drug_text)
         tablet_multiplier = extract_tablet_multiplier(drug_text)
+        prn = extract_prn(drug_text)
 
         if is_combo:
             # Slash-notation strength is ambiguous per ingredient; use combo_strengths instead
@@ -291,6 +303,7 @@ def normalize_medication_row(row, concept_mapper) -> dict:
             "frequency_per_day": frequency_per_day,
             "tablet_multiplier": tablet_multiplier,
             "total_daily_dose_mg": total_daily_dose_mg,
+            "prn": prn,
         }
     except Exception as e:
         logger.warning(
@@ -313,6 +326,7 @@ def normalize_medication_row(row, concept_mapper) -> dict:
             "frequency_per_day": None,
             "tablet_multiplier": 1.0,
             "total_daily_dose_mg": None,
+            "prn": False,
         }
 
 
