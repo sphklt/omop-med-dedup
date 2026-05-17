@@ -26,6 +26,52 @@ Build a small OMOP-style pipeline that:
    - not_duplicate
 6. Creates a final deduplicated output.
 
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph inputs["Input"]
+        A["source_a_medications.csv\nEHR"]
+        B["source_b_medications.csv\nPharmacy"]
+        V["vocab/CONCEPT.csv\nvocab/CONCEPT_RELATIONSHIP.csv\nAthena RxNorm vocabulary"]
+    end
+
+    subgraph normalization["normalize.py — Normalization"]
+        VOCAB["AthenaVocab.lookup\n① Exact match + salt stripping\n② Brand name via CONCEPT_RELATIONSHIP\n③ Fuzzy fallback via rapidfuzz"]
+        PARSE["Field extraction\nstrength · frequency · PRN\nroute · tablet count · formulation"]
+        NORM["normalized_drug_exposure\n16 OMOP-style fields per record"]
+    end
+
+    subgraph matching["deduplicate.py — Matching"]
+        BLOCK["Block on\nperson_id × ingredient_concept_id\ncross-source + within-source"]
+        CLASSIFY["classify_pair\nduplicate · possible_duplicate · not_duplicate"]
+        RESULTS["match_results\nrecord_a · record_b · status · confidence · reason"]
+    end
+
+    subgraph deduplication["deduplicate.py — Deduplication"]
+        MERGE["Merge true duplicates\ncanonical preference: EHR › Pharmacy"]
+        FLAG["Flag possible duplicates\nfor human review"]
+        DEDUPED["deduped_drug_exposure"]
+    end
+
+    subgraph outputs["Output"]
+        O1["normalized_drug_exposure.csv"]
+        O2["match_results.csv"]
+        O3["deduped_drug_exposure.csv"]
+        APP["Streamlit app — app.py"]
+    end
+
+    A & B --> VOCAB & PARSE
+    V --> VOCAB
+    VOCAB & PARSE --> NORM
+    NORM --> BLOCK --> CLASSIFY --> RESULTS
+    RESULTS --> MERGE & FLAG --> DEDUPED
+    NORM --> O1
+    RESULTS --> O2
+    DEDUPED --> O3
+    O1 & O2 & O3 --> APP
+```
+
 ## Why OMOP-style?
 
 Instead of comparing raw text directly, both sources are transformed into common OMOP-like fields:
@@ -95,6 +141,45 @@ Extracts per-dose count from phrases like:
 Comparisons are run in two passes:
 - **Cross-source** — every unique unordered pair of source systems (EHR vs Pharmacy, EHR vs Claims, etc.)
 - **Within-source** — records within the same source system, to catch data-entry duplicates (same drug entered twice in the EHR on the same day)
+
+### Decision Logic
+
+```mermaid
+flowchart TD
+    START([Two records]) --> P1{Same person_id?}
+    P1 -->|No| ND[not_duplicate]
+    P1 -->|Yes| P2{Start dates within\ndate window?}
+    P2 -->|No| ND
+    P2 -->|Yes| P3{Same ingredient\nconcept?}
+    P3 -->|No| ND
+    P3 -->|Yes| P4{Same combo flag?}
+    P4 -->|No| ND
+    P4 -->|Yes| P5{PRN status\nmatches?}
+    P5 -->|No| ND
+    P5 -->|Yes| P6{Same route?}
+    P6 -->|No| PD1[possible_duplicate\nconf 0.50]
+    P6 -->|Yes| P7{Same formulation?}
+    P7 -->|No| PD2[possible_duplicate\nconf 0.65]
+    P7 -->|Yes| P8{Units comparable?}
+    P8 -->|No| PD3[possible_duplicate\nconf 0.55]
+    P8 -->|Yes| P9{Combo drug?}
+    P9 -->|Yes — strengths differ| ND
+    P9 -->|Yes — strengths missing| PD4[possible_duplicate\nconf 0.60]
+    P9 -->|No / strengths match| P10{Strength · frequency\n· daily dose all match?}
+    P10 -->|All match| DUP[duplicate\nconf 1.00]
+    P10 -->|Same daily dose only| PD5[possible_duplicate\nconf 0.75]
+    P10 -->|Frequency missing| PD6[possible_duplicate\nconf 0.60]
+    P10 -->|No match| ND
+
+    style DUP fill:#d4edda,color:#155724
+    style PD1 fill:#fff3cd,color:#856404
+    style PD2 fill:#fff3cd,color:#856404
+    style PD3 fill:#fff3cd,color:#856404
+    style PD4 fill:#fff3cd,color:#856404
+    style PD5 fill:#fff3cd,color:#856404
+    style PD6 fill:#fff3cd,color:#856404
+    style ND fill:#f8d7da,color:#721c24
+```
 
 ### Duplicate
 
