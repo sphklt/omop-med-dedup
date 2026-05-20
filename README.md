@@ -1,5 +1,9 @@
 # OMOP-Style Medication Deduplication Demo
 
+## Demo
+
+[![Watch the demo](https://img.youtube.com/vi/An3AV93-cpM/0.jpg)](https://www.youtube.com/watch?v=An3AV93-cpM)
+
 ## Problem
 
 Two medication datasets may contain overlapping drug exposure records, but the same medication can be represented differently.
